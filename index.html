@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pill Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color:rgb(172, 227, 240);
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 10px;
+            display: none; /* Initially hidden */
+            img-align:center;
+        }
+        #prediction {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Upload an Image for Pill Detection</h2>
+    
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="file-input" accept="image/*">
+        <button type="submit">Predict</button>
+    </form>
+    
+    <p><b>Selected Image:</b> <span id="file-name">None</span></p>
+    <img id="uploaded-image">
+    
+    <p id="prediction">Prediction: <span id="prediction-result">-</span></p>
+</div>
+
+<script>
+    document.getElementById("file-input").addEventListener("change", function(event) {
+        let file = event.target.files[0];
+        if (file) {
+            document.getElementById("file-name").innerText = file.name;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let img = document.getElementById("uploaded-image");
+                img.src = e.target.result;
+                img.style.display = "block"; // Show image after selection
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        let formData = new FormData();
+        let file = document.getElementById("file-input").files[0];
+        if (!file) {
+            alert("Please select an image first.");
+            return;
+        }
+
+        formData.append("file", file);
+        
+        fetch("/predict", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("prediction-result").innerText = data.prediction;
+        })
+        .catch(error => console.error("Error:", error));
+    });
+</script>
+
+</body>
+</html>
